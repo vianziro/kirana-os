@@ -9,8 +9,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: kirana-${{ github.ref }}
@@ -75,13 +73,11 @@ jobs:
           ! dpkg-divert --list | grep kirana-branding
           echo "uninstall OK"
 
-  publish:
-    if: github.event_name != 'pull_request'
+  release:
+    # rilis = tag v*: repo APT flat bertanda tangan diunggah sebagai aset GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: test
     runs-on: ubuntu-24.04
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -94,17 +90,14 @@ jobs:
         run: |
           echo "$APT_SIGNING_KEY" | gpg --batch --import
           echo "SIGNING_KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr/{print $10; exit}')" >> "$GITHUB_ENV"
-      - name: Build signed APT repository
+      - name: Build signed flat APT repository
         run: |
           sudo apt-get install -y -qq apt-utils
-          bash repo/make-repo.sh
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-      - id: deploy
-        uses: actions/deploy-pages@v4
-      - name: GitHub Release (tag v*)
-        if: startsWith(github.ref, 'refs/tags/v')
+          bash repo/make-flat-repo.sh
+      - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.deb --title "Kirana OS $GITHUB_REF_NAME" --generate-notes
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 \
+            && gh release upload "$GITHUB_REF_NAME" dist/* --clobber \
+            || gh release create "$GITHUB_REF_NAME" dist/* --title "Kirana OS $GITHUB_REF_NAME" --generate-notes
