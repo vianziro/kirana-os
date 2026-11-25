@@ -1,0 +1,29 @@
+# Kirana OS - prompt minimalis
+add_newline = true
+format = "$directory$git_branch$git_status$python$cmd_duration$line_break$character"
+
+[directory]
+style = "bold #2BC4B6"
+truncation_length = 3
+read_only = " ro"
+
+[git_branch]
+symbol = "⎇ "
+style = "#B9A4FF"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "#FF9A5A"
+
+[python]
+symbol = "py "
+style = "#FFD27A"
+
+[cmd_duration]
+min_time = 2000
+style = "#8C88B5"
+format = "[⏱ $duration]($style) "
+
+[character]
+success_symbol = "[❯](bold #2BC4B6)"
+error_symbol = "[❯](bold #FF5C7A)"

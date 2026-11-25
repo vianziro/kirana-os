@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" width="640" height="160">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2BC4B6"/><stop offset="1" stop-color="#5B5BD6"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD27A"/><stop offset="1" stop-color="#FF8A4C"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(5,5) scale(0.586)">
+    <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+    <rect x="78" y="62" width="26" height="132" rx="13" fill="#FFFFFF"/>
+    <path d="M112 128 L170 66" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" fill="none"/>
+    <path d="M112 128 L170 190" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" fill="none"/>
+    <circle cx="186" cy="128" r="17" fill="url(#sun)"/>
+  </g>
+  <text x="180" y="102" font-family="Inter, sans-serif" font-size="68" font-weight="700" fill="#FFFFFF" letter-spacing="-1">Kirana <tspan font-weight="300" fill="#2BC4B6">OS</tspan></text>
+</svg>

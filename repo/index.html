@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kirana OS</title>
+<style>
+  :root { --bg:#0E1230; --bg2:#2A1C4F; --fg:#E6E4FF; --muted:#B3AFDB; --accent:#2BC4B6; --accent2:#FF9A5A; --code:#161939; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:linear-gradient(180deg,var(--bg),var(--bg2)); color:var(--fg);
+         font-family:Inter, system-ui, sans-serif; line-height:1.6; padding:48px 16px; }
+  main { max-width:760px; margin:0 auto; }
+  h1 { font-size:40px; margin:12px 0 0; letter-spacing:-1px; }
+  h1 span { color:var(--accent); font-weight:300; }
+  .sub { color:var(--muted); margin:4px 0 32px; }
+  h2 { font-size:18px; color:var(--accent2); margin:32px 0 8px; }
+  pre { background:var(--code); border:1px solid rgba(43,196,182,.3); border-radius:12px; padding:14px 16px;
+        overflow-x:auto; font-family:"JetBrains Mono", ui-monospace, monospace; font-size:13px; }
+  a { color:var(--accent); }
+  ul { padding-left:20px; }
+  footer { margin-top:48px; color:var(--muted); font-size:12px; letter-spacing:2px; }
+  footer b { color:var(--accent2); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kirana <span>OS</span></h1>
+  <p class="sub">Distro ringan, keren, dan minimalis berbasis Ubuntu 24.04 LTS · built by vianziro</p>
+
+  <h2>Pasang di Ubuntu 24.04 (GNOME)</h2>
+<pre>curl -fsSL https://vianziro.github.io/kirana-os/kirana-archive-keyring.gpg \
+  | sudo tee /usr/share/keyrings/kirana-archive-keyring.gpg >/dev/null
+echo "deb [signed-by=/usr/share/keyrings/kirana-archive-keyring.gpg] https://vianziro.github.io/kirana-os stable main" \
+  | sudo tee /etc/apt/sources.list.d/kirana.list
+sudo apt update
+sudo apt install kirana-desktop
+sudo reboot</pre>
+
+  <h2>Paket</h2>
+  <ul>
+    <li><b>kirana-desktop</b>: memasang semuanya + pengaturan bawaan</li>
+    <li><b>kirana-branding</b>: identitas distro (GRUB, splash, login, About)</li>
+    <li><b>kirana-themes</b>: 5 tema, kursor, wallpaper dinamis, auto-tiling</li>
+    <li><b>kirana-tools</b>: <code>kirana</code>, <code>kirana-theme</code>, <code>kirana-keys</code>, widget</li>
+    <li><b>kirana-vm</b>: perbaikan khusus VirtualBox (otomatis nonaktif di PC asli)</li>
+    <li><b>fastfetch</b>, <b>starship</b>: dari rilis resmi upstream</li>
+  </ul>
+
+  <h2>Hapus</h2>
+<pre>sudo apt purge kirana-desktop kirana-branding kirana-themes kirana-tools kirana-vm</pre>
+
+  <p>Kode sumber &amp; panduan: <a href="https://github.com/vianziro/kirana-os">github.com/vianziro/kirana-os</a></p>
+  <footer>KIRANA OS · SENJA · BUILT BY <b>VIANZIRO</b></footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,24 @@
+#!/bin/sh
+# kirana-vm: perbaikan khusus VirtualBox. Di PC asli paket ini tidak mengubah apa pun.
+set -e
+[ "$1" = configure ] || exit 0
+
+# migrasi dari versi skrip
+rm -f /usr/local/sbin/kirana-display-refresh
+for f in /etc/pam.d/gdm-password /etc/pam.d/gdm-autologin; do
+  [ -f "$f" ] && sed -i '\|kirana-display-refresh|d' "$f"
+done
+
+[ "$(systemd-detect-virt 2>/dev/null)" = oracle ] || exit 0
+
+# 1) layar beku setelah login: gambar ulang layar saat sesi dibuka
+for f in /etc/pam.d/gdm-password /etc/pam.d/gdm-autologin; do
+  [ -f "$f" ] && echo "session optional pam_exec.so quiet /usr/sbin/kirana-display-refresh" >> "$f"
+done
+
+# 2) sesi X11 (lebih stabil di driver vmwgfx)
+C=/etc/gdm3/custom.conf
+if [ -f "$C" ] && ! grep -q '^WaylandEnable=false' "$C"; then
+  sed -i '/^\[daemon\]/a # kirana-vm\nWaylandEnable=false' "$C"
+fi
+exit 0

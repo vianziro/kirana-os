@@ -1,0 +1,23 @@
+{
+  "logo": { "source": "/etc/kirana/logo.txt", "type": "file",
+            "color": { "1": "38;2;43;196;182", "2": "38;2;255;154;90", "3": "38;2;140;136;181" },
+            "padding": { "top": 1, "right": 4 } },
+  "display": { "separator": "  ", "color": { "keys": "38;2;43;196;182" } },
+  "modules": [
+    { "type": "title", "color": { "user": "38;2;255;255;255", "at": "38;2;140;136;181", "host": "38;2;43;196;182" } },
+    { "type": "separator", "string": "─", "outputColor": "38;2;140;136;181" },
+    { "type": "os",       "key": "os    " },
+    { "type": "kernel",   "key": "kernel" },
+    { "type": "uptime",   "key": "uptime" },
+    { "type": "packages", "key": "pkgs  " },
+    { "type": "de",       "key": "de    " },
+    { "type": "theme",    "key": "theme " },
+    { "type": "icons",    "key": "icons " },
+    { "type": "cpu",      "key": "cpu   " },
+    { "type": "memory",   "key": "ram   " },
+    { "type": "disk",     "key": "disk  ", "folders": "/" },
+    { "type": "custom",   "key": "build ", "format": "vianziro · 2026.11" },
+    "break",
+    { "type": "colors", "symbol": "circle" }
+  ]
+}

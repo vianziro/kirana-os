@@ -1,0 +1,79 @@
+#!/bin/sh
+# /usr/lib/kirana/rebrand install|remove
+# Mengganti file berlabel Ubuntu milik paket lain secara aman:
+# file asli dialihkan (dpkg-divert --package kirana-branding) ke /usr/share/kirana/diverted/,
+# lalu versi Kirana dipasang di path aslinya. "remove" mengembalikan semuanya.
+set -e
+PKG=kirana-branding
+R=/usr/share/kirana/branding/replace
+DV=/usr/share/kirana/diverted
+
+# file yang diganti utuh dengan versi di $R
+REPLACE="/usr/lib/os-release
+/etc/lsb-release
+/etc/issue
+/etc/issue.net
+/etc/legal
+/usr/share/pixmaps/ubuntu-logo-text.png
+/usr/share/pixmaps/ubuntu-logo-text-dark.png
+/etc/apt/apt.conf.d/20apt-esm-hook.conf
+/usr/share/gnome-background-properties/noble-wallpapers.xml
+/usr/share/gnome-background-properties/ubuntu-wallpapers.xml"
+
+# file yang dibuat ulang dari aslinya (hanya nama yang diganti)
+GENERATE="/usr/share/wayland-sessions/ubuntu.desktop
+/usr/share/wayland-sessions/ubuntu-wayland.desktop
+/usr/share/xsessions/ubuntu.desktop
+/usr/share/xsessions/ubuntu-xorg.desktop
+/usr/share/applications/gnome-ubuntu-panel.desktop"
+
+owner() { dpkg-divert --listpackage "$1" 2>/dev/null || true; }
+
+divert_add() {
+  f=$1
+  # migrasi: divert lokal dari skrip lama (scripts/13-deep-rebrand.sh)
+  if [ "$(owner "$f")" = LOCAL ]; then
+    rm -f "$f"
+    dpkg-divert --local --rename --remove "$f" >/dev/null
+  fi
+  if [ "$(owner "$f")" != "$PKG" ]; then
+    mkdir -p "$(dirname "$DV$f")"
+    dpkg-divert --package "$PKG" --rename --divert "$DV$f" --add "$f" >/dev/null
+  fi
+}
+
+divert_del() {
+  f=$1
+  [ "$(owner "$f")" = "$PKG" ] || return 0
+  rm -f "$f"
+  dpkg-divert --package "$PKG" --rename --remove "$f" >/dev/null
+}
+
+rename_desktop() { # asli -> tujuan
+  sed -e 's/^Name=Ubuntu on Xorg$/Name=Kirana (Xorg)/' \
+      -e 's/^Name=Ubuntu on Wayland$/Name=Kirana (Wayland)/' \
+      -e 's/^Name=Ubuntu$/Name=Kirana/' \
+      -e 's/^Name=Ubuntu Desktop$/Name=Kirana Desktop/' \
+      -e '/^Name\[/d' -e '/^Comment\[/d' \
+      -e 's/^Comment=.*Ubuntu.*/Comment=Kirana OS/' "$1" > "$2"
+}
+
+case "$1" in
+  install)
+    echo "$REPLACE" | while read -r f; do
+      [ -n "$f" ] || continue
+      divert_add "$f"
+      install -m644 "$R$f" "$f"
+    done
+    echo "$GENERATE" | while read -r f; do
+      [ -n "$f" ] || continue
+      divert_add "$f"
+      [ -f "$DV$f" ] && rename_desktop "$DV$f" "$f"
+    done
+    ;;
+  remove)
+    echo "$REPLACE
+$GENERATE" | while read -r f; do [ -n "$f" ] && divert_del "$f"; done
+    ;;
+  *) echo "pakai: $0 install|remove" >&2; exit 1 ;;
+esac

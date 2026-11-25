@@ -1,0 +1,4 @@
+#!/bin/sh
+# jalankan widget desktop: pakai warna tema user bila ada
+f="$HOME/.config/kirana/conky.conf"; [ -f "$f" ] || f=/etc/kirana/conky.conf
+pkill -x conky 2>/dev/null; exec conky -c "$f"

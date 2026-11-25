@@ -1,0 +1,101 @@
+#!/bin/bash
+# kirana-theme - ganti seluruh tampilan Kirana OS dengan satu perintah (built by vianziro)
+#   kirana-theme            -> pilih lewat jendela
+#   kirana-theme nord       -> langsung ganti
+#   kirana-theme --list     -> daftar tema
+# Yang diganti: tema GTK, panel & dock (GNOME Shell), warna terminal, prompt, fastfetch,
+# widget desktop, dan wallpaper. Tanpa sudo: semua hasilnya disimpan di folder user.
+set -e
+SYS=/usr/share/kirana
+THEMES=$SYS/themes
+CFG=${XDG_CONFIG_HOME:-$HOME/.config}/kirana
+DATA=${XDG_DATA_HOME:-$HOME/.local/share}
+mkdir -p "$CFG" "$DATA/themes" "$DATA/backgrounds"
+
+list() { for f in "$THEMES"/*.theme; do basename "$f" .theme; done; }
+
+NAME="$1"
+if [ "$NAME" = "--list" ]; then list; exit 0; fi
+if [ -z "$NAME" ]; then
+  CUR=$(cat "$CFG/current" 2>/dev/null || echo senja)
+  for t in $(list); do ( . "$THEMES/$t.theme"; echo "$t|$LABEL" ); done > /tmp/kt.$$
+  NAME=$(while IFS='|' read -r id label; do
+           [ "$id" = "$CUR" ] && echo TRUE || echo FALSE; echo "$id"; echo "$label"
+         done < /tmp/kt.$$ | zenity --list --radiolist --title="Kirana Theme" \
+           --text="Pilih tema Kirana OS" --column="" --column="id" --column="Tema" \
+           --hide-column=2 --print-column=2 --width=360 --height=330 2>/dev/null) || true
+  rm -f /tmp/kt.$$
+  [ -z "$NAME" ] && exit 0
+fi
+[ -f "$THEMES/$NAME.theme" ] || { echo "Tema '$NAME' tidak ada. Pilihan: $(list | tr '\n' ' ')"; exit 1; }
+. "$THEMES/$NAME.theme"
+A=${ACCENT#\#}; A2=${ACCENT2#\#}; M=${MUTED#\#}
+
+# 1) GTK (aplikasi) + link GTK4/libadwaita
+gsettings set org.gnome.desktop.interface gtk-theme "$GTK"
+mkdir -p ~/.config/gtk-4.0
+for f in gtk.css gtk-dark.css assets; do ln -sfn "/usr/share/themes/$GTK/gtk-4.0/$f" ~/.config/gtk-4.0/$f; done
+
+# 2) GNOME Shell: basis Orchis varian + CSS Kirana yang diwarnai ulang
+ST="$DATA/themes/Kirana-$NAME"
+rm -rf "$ST"; mkdir -p "$ST"
+cp -r "/usr/share/themes/$GTK/gnome-shell" "$ST/"
+cp "$SYS/kirana-logo.svg" "$ST/gnome-shell/"
+sed -e "s/#2BC4B6/$ACCENT/g" -e "s/43, 196, 182/$ACCENT_RGB/g" \
+    -e "s/14, 18, 48/$PANEL_RGB/g" -e "s/18, 20, 44/$MENU_RGB/g" \
+    -e "s/#0E1230/$TERM_BG/g" -e "s/#E6E4FF/$TERM_FG/g" \
+    "$SYS/kirana-shell.css" >> "$ST/gnome-shell/gnome-shell.css"
+gsettings set org.gnome.shell.extensions.user-theme name ''
+gsettings set org.gnome.shell.extensions.user-theme name "Kirana-$NAME"
+
+# border jendela aktif (Tiling Shell) ikut warna aksen
+TSD=$HOME/.local/share/gnome-shell/extensions/tilingshell@ferrarodomenico.com/schemas
+[ -d "$TSD" ] && gsettings --schemadir "$TSD" set org.gnome.shell.extensions.tilingshell window-border-color "$ACCENT" || true
+
+# 3) Terminal (GNOME Terminal profil default)
+PID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")
+P=/org/gnome/terminal/legacy/profiles:/:$PID/
+dconf write ${P}background-color "'$TERM_BG'"
+dconf write ${P}foreground-color "'$TERM_FG'"
+dconf write ${P}cursor-background-color "'$ACCENT'"
+dconf write ${P}cursor-foreground-color "'$TERM_BG'"
+dconf write ${P}palette "$PALETTE"
+
+# 4) Prompt, fastfetch, widget
+rgb() { echo "$1" | sed 's/, */;/g'; }
+sed -e "s/#2BC4B6/$ACCENT/g" -e "s/#FF9A5A/$ACCENT2/g" -e "s/#B9A4FF/$MUTED/g" \
+    /etc/kirana/starship.toml > "$CFG/starship.toml"
+sed -e "s/43;196;182/$(rgb "$ACCENT_RGB")/g" /etc/kirana/fastfetch.jsonc > "$CFG/fastfetch.jsonc"
+sed -e "s/color1 = '[0-9A-Fa-f]*'/color1 = '$A'/" -e "s/color2 = '[0-9A-Fa-f]*'/color2 = '$A2'/" \
+    -e "s/color3 = '[0-9A-Fa-f]*'/color3 = '$M'/" /etc/kirana/conky.conf > "$CFG/conky.conf"
+pkill -x conky 2>/dev/null || true
+(setsid kirana-widget >/dev/null 2>&1 &)
+
+# 5) Wallpaper
+if [ "$WALLPAPER" = "dynamic" ]; then
+  WP="file:///usr/share/backgrounds/kirana/kirana-dinamis.xml"
+else
+  OUT="$DATA/backgrounds/kirana-$NAME.png"
+  SKY="$SKY" SUN="$SUN" GLOW="$GLOW" MTN="$MTN" LINE="$ACCENT" python3 - "$SYS/wallpaper.svg" "$CFG/wp.svg" <<'PY'
+import os, sys
+s = open(sys.argv[1]).read()
+for a, b in zip(['#0E1230', '#3A2A6B', '#C2477A', '#FF9A5A'], os.environ['SKY'].split()):
+    s = s.replace(f'stop-color="{a}"', f'stop-color="{b}"', 1)
+for a, b in zip(['#FFE29A', '#FF7A45'], os.environ['SUN'].split()):
+    s = s.replace(f'stop-color="{a}"', f'stop-color="{b}"', 1)
+s = s.replace('stop-color="#FFB36B"', f'stop-color="{os.environ["GLOW"]}"')
+for a, b in zip(['#6B2F7A', '#3B2260', '#21194A', '#120F2E'], os.environ['MTN'].split()):
+    s = s.replace(f'fill="{a}"', f'fill="{b}"', 1)
+s = s.replace('<g fill="#C2477A">', f'<g fill="{os.environ["SKY"].split()[2]}">')
+s = s.replace('stroke="#2BC4B6"', f'stroke="{os.environ["LINE"]}"')
+open(sys.argv[2], 'w').write(s)
+PY
+  rsvg-convert -w 2560 -h 1440 "$CFG/wp.svg" -o "$OUT"; rm -f "$CFG/wp.svg"
+  WP="file://$OUT"
+fi
+gsettings set org.gnome.desktop.background picture-uri "$WP"
+gsettings set org.gnome.desktop.background picture-uri-dark "$WP"
+
+echo "$NAME" > "$CFG/current"
+notify-send -i kirana-logo "Kirana Theme" "Tema $LABEL aktif. Buka terminal baru untuk prompt baru." 2>/dev/null || true
+echo "Tema Kirana: $LABEL"

@@ -1,0 +1,56 @@
+
+/* ================= Kirana OS shell overrides (built by vianziro) ================= */
+
+/* Panel atas: kapsul kaca mengambang dengan garis teal tipis */
+#panel {
+  background-color: rgba(14, 18, 48, 0.62);
+  border: 1px solid rgba(43, 196, 182, 0.30);
+  margin: 8px 14px 0 14px;
+  height: 34px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+#panel .panel-corner { -panel-corner-opacity: 0; }
+#panel.unlock-screen, #panel.login-screen, #panel:overview {
+  background-color: transparent; border-color: transparent; box-shadow: none;
+}
+
+/* Tombol Activities -> logo Kirana */
+#panel .panel-button#panelActivities {
+  background-image: url("kirana-logo.svg");
+  background-size: 22px 22px;
+  width: 22px; height: 22px;
+  margin-left: 6px;
+}
+#panel .panel-button#panelActivities:hover { background-color: rgba(43,196,182,0.18) !important; }
+
+#panel .panel-button { font-weight: 600; color: #E6E4FF; border-radius: 10px; }
+#panel .panel-button:hover { background-color: rgba(43, 196, 182, 0.16); }
+#panel .panel-button:active, #panel .panel-button:checked { background-color: rgba(43, 196, 182, 0.28); color: #FFFFFF; }
+#panel .panel-button.clock-display .clock { color: #FFFFFF; font-weight: 700; letter-spacing: 0.5px; }
+
+/* Dock kaca */
+#dashtodockContainer #dash .dash-background,
+#dashtodockContainer.bottom #dash .dash-background {
+  background-color: rgba(14, 18, 48, 0.62);
+  border: 1px solid rgba(43, 196, 182, 0.30);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+}
+#dashtodockContainer .app-well-app-running-dot,
+#dashtodockContainer .app-grid-running-dot { background-color: #2BC4B6; }
+#dash .app-well-app:hover .overview-icon,
+#dash .show-apps:hover .overview-icon { background-color: rgba(43, 196, 182, 0.20); }
+
+/* Menu, notifikasi, quick settings: sudut lebih bulat + garis teal */
+.popup-menu-content, .quick-settings, .message-list, .calendar {
+  border-radius: 18px;
+  border: 1px solid rgba(43, 196, 182, 0.22);
+  background-color: rgba(18, 20, 44, 0.96);
+}
+.quick-toggle:checked, .quick-menu-toggle .quick-toggle:checked {
+  background-color: #2BC4B6; color: #0E1230;
+}
+.slider { -barlevel-active-background-color: #2BC4B6; color: #2BC4B6; }
+.search-entry { border-radius: 14px; border: 1px solid rgba(43,196,182,0.35); }
+.search-entry:focus { border-color: #2BC4B6; }

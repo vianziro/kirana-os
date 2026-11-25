@@ -1,0 +1,29 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Kirana OS
+Upstream-Contact: vianziro <vianziro@users.noreply.github.com>
+Source: https://github.com/vianziro/kirana-os
+
+Files: *
+Copyright: 2026 vianziro
+License: GPL-3.0-or-later
+
+Files: usr/share/themes/Orchis-* usr/share/themes/Kirana/*
+Copyright: Vince Liuice and contributors (https://github.com/vinceliuice/Orchis-theme)
+License: GPL-3.0-or-later
+Comment: Tema Kirana adalah turunan Orchis-Teal-Dark dengan CSS tambahan Kirana OS.
+
+Files: usr/share/icons/Bibata-*
+Copyright: Abdulkaiz Khatri (https://github.com/ful1e5/Bibata_Cursor)
+License: GPL-3.0-or-later
+
+Files: usr/share/gnome-shell/extensions/tilingshell@ferrarodomenico.com/* usr/share/glib-2.0/schemas/org.gnome.shell.extensions.tilingshell.gschema.xml
+Copyright: Domenico Ferraro (https://github.com/domferr/tilingshell)
+License: GPL-2.0-or-later
+
+License: GPL-3.0-or-later
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in /usr/share/common-licenses/GPL-3.
+
+License: GPL-2.0-or-later
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in /usr/share/common-licenses/GPL-2.

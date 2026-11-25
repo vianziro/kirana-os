@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+  # migrasi dari versi skrip: salinan lama di /usr/local/bin akan menutupi versi paket di PATH
+  for b in kirana kirana-theme kirana-keys kirana-widget; do
+    [ -f /usr/local/bin/$b ] && rm -f /usr/local/bin/$b || true
+  done
+  [ -f /etc/xdg/autostart/kirana-widget.desktop.dpkg-old ] && rm -f /etc/xdg/autostart/kirana-widget.desktop.dpkg-old || true
+fi
+exit 0

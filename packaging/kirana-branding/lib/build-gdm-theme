@@ -1,0 +1,33 @@
+#!/bin/sh
+# /usr/lib/kirana/build-gdm-theme
+# Membangun tema layar login (GDM) Kirana dari tema Yaru yang TERPASANG,
+# sehingga tetap cocok setelah Ubuntu memperbarui Yaru (dipicu dpkg trigger).
+set -e
+SRC=/usr/share/gnome-shell/theme/Yaru/gnome-shell-theme.gresource
+OUT=/usr/share/gnome-shell/theme/kirana/kirana-gdm.gresource
+CSS=/usr/share/kirana/gdm/kirana-gdm.css
+[ -f "$SRC" ] || { echo "kirana: tema Yaru tidak ada, lewati tema GDM"; exit 0; }
+command -v glib-compile-resources >/dev/null || { echo "kirana: glib-compile-resources tidak ada"; exit 0; }
+
+W=$(mktemp -d); trap 'rm -rf "$W"' EXIT
+for r in $(gresource list "$SRC"); do
+  p=${r#/org/gnome/shell/theme/}
+  mkdir -p "$W/$(dirname "$p")"
+  gresource extract "$SRC" "$r" > "$W/$p"
+done
+# aksen oranye Ubuntu -> teal Kirana
+find "$W" -name '*.css' -exec sed -i -e 's/#ef8661/#2bc4b6/Ig' -e 's/#e95420/#2bc4b6/Ig' \
+  -e 's/#433c39/#1d3a48/Ig' -e 's/#4c4543/#23485a/Ig' {} +
+for f in gdm.css Yaru/gnome-shell.css Yaru/gnome-shell-dark.css; do
+  [ -f "$W/$f" ] && cat "$CSS" >> "$W/$f"
+done
+{
+  echo '<?xml version="1.0" encoding="UTF-8"?><gresources><gresource prefix="/org/gnome/shell/theme">'
+  (cd "$W" && find . -type f ! -name '*.xml' | sed 's|^\./||; s|.*|<file>&</file>|')
+  echo '</gresource></gresources>'
+} > "$W/kirana.gresource.xml"
+(cd "$W" && glib-compile-resources kirana.gresource.xml)
+install -Dm644 "$W/kirana.gresource" "$OUT"
+
+update-alternatives --quiet --install /usr/share/gnome-shell/gdm-theme.gresource gdm-theme.gresource "$OUT" 100
+update-alternatives --quiet --set gdm-theme.gresource "$OUT"

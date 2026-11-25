@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ] || [ "$1" = purge ]; then
+  command -v dconf >/dev/null && dconf update || true
+fi
+exit 0

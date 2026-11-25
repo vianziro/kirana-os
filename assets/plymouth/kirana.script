@@ -1,0 +1,67 @@
+// Kirana OS - Plymouth splash (boot & shutdown)
+// Bahasa: Plymouth script. Dipanggil setiap frame oleh Plymouth.
+
+Window.SetBackgroundTopColor(0.055, 0.071, 0.188);    // #0E1230
+Window.SetBackgroundBottomColor(0.165, 0.110, 0.310); // #2A1C4F
+
+W = Window.GetWidth();  H = Window.GetHeight();
+X = Window.GetX();      Y = Window.GetY();
+cx = X + W / 2;         cy = Y + H / 2;
+
+// --- logo ---
+logo.image  = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetPosition(cx - logo.image.GetWidth() / 2, cy - logo.image.GetHeight() / 2 - 70, 10);
+
+// --- judul & keterangan: beda saat boot dan shutdown ---
+mode = Plymouth.GetMode();
+if (mode == "shutdown" || mode == "reboot")
+  caption.image = Image("bye.png");
+else
+  caption.image = Image("hello.png");
+caption.sprite = Sprite(caption.image);
+caption.sprite.SetPosition(cx - caption.image.GetWidth() / 2, cy + 60, 10);
+
+// --- kredit di bawah layar ---
+credit.image  = Image("credit.png");
+credit.sprite = Sprite(credit.image);
+credit.sprite.SetPosition(cx - credit.image.GetWidth() / 2, Y + H - 70, 10);
+
+// --- tiga titik berdenyut ---
+dot_img = Image("dot.png");
+for (i = 0; i < 3; i++) {
+  dots[i] = Sprite(dot_img);
+  dots[i].SetPosition(cx - 30 + i * 24 - dot_img.GetWidth() / 2, cy + 170, 10);
+}
+t = 0;
+fun refresh_cb() {
+  t++;
+  for (i = 0; i < 3; i++) {
+    phase = (t / 10 - i * 0.7);
+    dots[i].SetOpacity(0.25 + 0.75 * Math.Abs(Math.Sin(phase)));
+  }
+}
+Plymouth.SetRefreshFunction(refresh_cb);
+
+// --- pesan sistem (mis. "fsck ...") di bagian bawah ---
+msg.sprite = Sprite();
+fun message_cb(text) {
+  msg.image = Image.Text(text, 0.8, 0.85, 0.95);
+  msg.sprite.SetImage(msg.image);
+  msg.sprite.SetPosition(cx - msg.image.GetWidth() / 2, Y + H - 110, 10);
+}
+Plymouth.SetMessageFunction(message_cb);
+
+// --- dialog password (jika disk terenkripsi) ---
+fun password_cb(prompt, bullets) {
+  pw.prompt = Image.Text(prompt, 1, 1, 1);
+  pw.ps = Sprite(pw.prompt);
+  pw.ps.SetPosition(cx - pw.prompt.GetWidth() / 2, cy + 220, 20);
+  s = ""; for (i = 0; i < bullets; i++) s += "● ";
+  pw.bul = Image.Text(s, 0.17, 0.77, 0.71);
+  pw.bs = Sprite(pw.bul);
+  pw.bs.SetPosition(cx - pw.bul.GetWidth() / 2, cy + 250, 20);
+}
+Plymouth.SetDisplayPasswordFunction(password_cb);
+fun normal_cb() { pw.ps = NULL; pw.bs = NULL; }
+Plymouth.SetDisplayNormalFunction(normal_cb);

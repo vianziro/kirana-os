@@ -1,0 +1,60 @@
+#!/bin/bash
+# kirana - alat serba guna Kirana OS (built by vianziro)
+C=$'\e[38;2;43;196;182m'; O=$'\e[38;2;255;154;90m'; D=$'\e[2m'; B=$'\e[1m'; R=$'\e[0m'
+say()  { echo "${C}❯${R} $*"; }
+ok()   { echo "  ${C}✓${R} $*"; }
+warn() { echo "  ${O}!${R} $*"; }
+
+case "$1" in
+  update|up)
+    say "Memperbarui Kirana OS…"
+    sudo apt-get update -q && sudo apt-get full-upgrade -y && sudo apt-get autoremove --purge -y && sudo apt-get clean
+    [ -f /var/run/reboot-required ] && warn "Perlu reboot untuk menyelesaikan update." || ok "Sistem terbaru." ;;
+  clean)
+    say "Membersihkan…"
+    B4=$(df --output=used / | tail -1)
+    sudo apt-get clean; sudo apt-get autoremove --purge -y -qq
+    sudo journalctl --vacuum-size=100M -q
+    rm -rf ~/.cache/thumbnails/* ~/.cache/fontconfig/* 2>/dev/null
+    AF=$(df --output=used / | tail -1)
+    ok "Ruang dibebaskan: $(( (B4-AF)/1024 )) MB" ;;
+  info|"")
+    fastfetch -c "$( [ -f ~/.config/kirana/fastfetch.jsonc ] && echo ~/.config/kirana/fastfetch.jsonc || echo /etc/kirana/fastfetch.jsonc )" ;;
+  theme)  shift; kirana-theme "$@" ;;
+  keys)   kirana-keys >/dev/null 2>&1 & ;;
+  mac)
+    if [ -d /media/mac ]; then say "Folder Mac: /media/mac"; ls /media/mac
+      [ -n "$DISPLAY" ] && (nautilus /media/mac >/dev/null 2>&1 &)
+    else warn "Folder Mac belum terhubung (shared folder 'prak' di VirtualBox)."; fi ;;
+  doctor)
+    say "Pemeriksaan kesehatan Kirana OS"
+    if K=$(journalctl -k -b --no-pager -q 2>/dev/null) && [ -n "$K" ]; then
+      E=$(echo "$K" | grep -cE "EXT4-fs error|I/O error")
+      [ "$E" = 0 ] && ok "Disk: tanpa error" || warn "Disk: $E error di log kernel — jalankan fsck!"
+    else
+      warn "Disk: log kernel tidak bisa dibaca (butuh grup adm)"
+    fi
+    F=$(systemctl --failed --no-legend | wc -l)
+    [ "$F" = 0 ] && ok "Layanan: tidak ada yang gagal" || { warn "Layanan gagal: $F"; systemctl --failed --no-legend | sed 's/^/     /'; }
+    U=$(df --output=pcent / | tail -1 | tr -d ' %')
+    [ "$U" -lt 85 ] && ok "Ruang disk: ${U}% terpakai" || warn "Ruang disk: ${U}% terpakai"
+    ok "RAM: $(free -h | awk '/Mem/{print $3" / "$2}') · swap zram: $(free -h | awk '/Swap/{print $3}')"
+    ok "Boot: $(systemd-analyze | grep -oE '= .*' | tr -d '=')"
+    [ -f /etc/sudoers.d/99-claude-temp ] && warn "sudo tanpa password masih aktif (hapus: sudo rm /etc/sudoers.d/99-claude-temp)"
+    true ;;
+  version|-v) . /etc/os-release; echo "$PRETTY_NAME · ${BUILD_ID}" ;;
+  help|-h|*)
+    cat <<EOF
+${B}kirana${R} ${D}— alat Kirana OS${R}
+
+  ${C}kirana info${R}          ringkasan sistem
+  ${C}kirana update${R}        perbarui semua paket
+  ${C}kirana clean${R}         bersihkan cache & log
+  ${C}kirana doctor${R}        cek kesehatan sistem
+  ${C}kirana theme${R} [nama]  ganti tema (senja nord catppuccin gruvbox tokyo-night)
+  ${C}kirana keys${R}          contekan shortcut
+  ${C}kirana mac${R}           buka folder Mac
+  ${C}kirana version${R}       versi Kirana OS
+EOF
+    ;;
+esac

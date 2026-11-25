@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ] || [ "$1" = purge ]; then
+  for f in /etc/pam.d/gdm-password /etc/pam.d/gdm-autologin; do
+    [ -f "$f" ] && sed -i '\|kirana-display-refresh|d' "$f"
+  done
+  [ -f /etc/gdm3/custom.conf ] && sed -i '/^# kirana-vm$/,+1d' /etc/gdm3/custom.conf
+fi
+exit 0

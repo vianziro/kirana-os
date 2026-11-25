@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kirana OS</title>
+<style>
+  :root { --bg:#0E1230; --bg2:#2A1C4F; --fg:#E6E4FF; --muted:#B3AFDB; --accent:#2BC4B6; --accent2:#FF9A5A; --card:rgba(255,255,255,.05); }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { background:linear-gradient(180deg,var(--bg),var(--bg2)); color:var(--fg);
+         font-family:Inter, system-ui, sans-serif; display:flex; align-items:center; justify-content:center; padding:24px; }
+  main { width:100%; max-width:640px; text-align:center; }
+  .logo { width:72px; height:72px; }
+  h1 { margin:14px 0 2px; font-size:30px; font-weight:700; letter-spacing:-.5px; }
+  h1 span { color:var(--accent); font-weight:300; }
+  .greet { color:var(--accent2); font-weight:500; margin:0 0 4px; }
+  .clock { font-size:72px; font-weight:200; line-height:1; margin:18px 0 6px; font-variant-numeric:tabular-nums; }
+  .date { color:var(--accent); margin-bottom:28px; }
+  form { display:flex; background:var(--card); border:1px solid rgba(43,196,182,.35); border-radius:16px; overflow:hidden; }
+  input { flex:1; background:transparent; border:0; color:var(--fg); font:inherit; font-size:16px; padding:14px 18px; outline:none; min-width:0; }
+  input::placeholder { color:var(--muted); }
+  button { background:var(--accent); color:var(--bg); border:0; font:inherit; font-weight:700; padding:0 20px; cursor:pointer; }
+  .links { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px; margin-top:22px; }
+  .links a { background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 10px;
+             color:var(--fg); text-decoration:none; font-size:14px; }
+  .links a:hover { border-color:var(--accent); color:var(--accent); }
+  footer { margin-top:30px; color:var(--muted); font-size:11px; letter-spacing:3px; }
+  footer b { color:var(--accent2); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="logo" viewBox="0 0 256 256" aria-hidden="true">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2BC4B6"/><stop offset="1" stop-color="#5B5BD6"/></linearGradient>
+      <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD27A"/><stop offset="1" stop-color="#FF8A4C"/></linearGradient>
+    </defs>
+    <circle cx="128" cy="128" r="120" fill="url(#bg)"/>
+    <rect x="78" y="62" width="26" height="132" rx="13" fill="#fff"/>
+    <path d="M112 128 L170 66" stroke="#fff" stroke-width="26" stroke-linecap="round"/>
+    <path d="M112 128 L170 190" stroke="#fff" stroke-width="26" stroke-linecap="round"/>
+    <circle cx="186" cy="128" r="17" fill="url(#sun)"/>
+  </svg>
+  <h1>Kirana <span>OS</span></h1>
+  <p class="greet" id="greet"></p>
+  <div class="clock" id="clock">--:--</div>
+  <div class="date" id="date"></div>
+  <form action="https://duckduckgo.com/" method="get">
+    <input name="q" placeholder="Cari di web…" autofocus autocomplete="off">
+    <button type="submit">Cari</button>
+  </form>
+  <nav class="links">
+    <a href="file:///media/mac">Folder Mac</a>
+    <a href="file:///usr/share/kirana/README.html">Panduan Kirana</a>
+    <a href="https://github.com">GitHub</a>
+    <a href="https://packages.ubuntu.com/noble/">Cari paket</a>
+  </nav>
+  <footer>KIRANA OS 1.0 · SENJA &nbsp;·&nbsp; BUILT BY <b>VIANZIRO</b></footer>
+</main>
+<script>
+  function tick() {
+    const d = new Date(), h = d.getHours();
+    document.getElementById('clock').textContent = d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('date').textContent = d.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    document.getElementById('greet').textContent = (h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam');
+  }
+  tick(); setInterval(tick, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+in_container() { systemd-detect-virt --container -q 2>/dev/null; }
+if [ "$1" = remove ] || [ "$1" = purge ]; then
+  command -v dconf >/dev/null && dconf update || true
+  for m in 10-help-text 50-motd-news 91-contract-ua-esm-status 91-release-upgrade; do
+    [ -f /etc/update-motd.d/$m ] && chmod +x /etc/update-motd.d/$m || true
+  done
+  if ! in_container; then
+    command -v update-initramfs >/dev/null && update-initramfs -u || true
+    [ -f /boot/grub/grub.cfg ] && command -v update-grub >/dev/null && update-grub || true
+  fi
+fi
+exit 0

@@ -1,0 +1,6 @@
+dist/
+build/
+.secrets/
+.impeccable/
+*.deb
+.DS_Store

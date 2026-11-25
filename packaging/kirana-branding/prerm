@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ]; then
+  update-alternatives --quiet --remove default.plymouth /usr/share/plymouth/themes/kirana/kirana.plymouth || true
+  update-alternatives --quiet --remove text.plymouth /usr/share/plymouth/themes/kirana-text/kirana-text.plymouth || true
+  update-alternatives --quiet --remove gdm-theme.gresource /usr/share/gnome-shell/theme/kirana/kirana-gdm.gresource || true
+  rm -f /usr/share/gnome-shell/theme/kirana/kirana-gdm.gresource
+  rm -rf /boot/grub/themes/kirana
+  /usr/lib/kirana/rebrand remove
+fi
+exit 0

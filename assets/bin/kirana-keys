@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+# kirana-keys - contekan shortcut Kirana OS (Super+/). Tutup: Esc, klik, atau tombol apa saja.
+# built by vianziro
+import os, re, gi
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk, Gdk
+
+def theme():
+    cfg = os.path.expanduser("~/.config/kirana/current")
+    name = open(cfg).read().strip() if os.path.exists(cfg) else "senja"
+    path = f"/usr/share/kirana/themes/{name}.theme"
+    vals = dict(re.findall(r'(\w+)="([^"]*)"', open(path).read())) if os.path.exists(path) else {}
+    return vals.get("LABEL", "Senja"), vals.get("ACCENT", "#2BC4B6"), vals.get("ACCENT2", "#FF9A5A"), \
+           vals.get("TERM_BG", "#11132A"), vals.get("TERM_FG", "#DCDCF0")
+
+GROUPS = [
+  ("Aplikasi", [("Super  Enter", "Terminal"), ("Super  B", "Browser"), ("Super  F", "File"),
+                ("Super  Space", "Cari aplikasi"), ("Super  Q", "Tutup jendela")]),
+  ("Jendela & Tiling", [("Super  ← → ↑ ↓", "Tile kiri / kanan / maks / pulihkan"),
+                ("Ctrl  saat drag", "Tampilkan layout tiling"), ("Super  H", "Sembunyikan"),
+                ("Super  Tab", "Ganti aplikasi")]),
+  ("Workspace", [("Super  1 … 4", "Pindah workspace"), ("Super  Shift  1 … 4", "Kirim jendela"),
+                ("Super  A", "Semua aplikasi")]),
+  ("Kirana", [("Super  /", "Contekan ini"), ("Super  Shift  T", "Ganti tema"),
+              ("Super  Shift  S", "Screenshot"), ("Super  L", "Kunci layar")]),
+]
+
+label, acc, acc2, bg, fg = theme()
+CSS = f"""
+window {{ background: transparent; }}
+.card {{ background-color: alpha({bg}, 0.94); border: 1px solid alpha({acc}, 0.45);
+         border-radius: 22px; padding: 28px 34px; box-shadow: 0 18px 48px rgba(0,0,0,.45); }}
+.title {{ color: {fg}; font-size: 22px; font-weight: 800; }}
+.title .os {{ color: {acc}; }}
+.sub {{ color: alpha({fg}, .55); font-size: 12px; letter-spacing: 2px; }}
+.group {{ color: {acc2}; font-size: 12px; font-weight: 700; letter-spacing: 2px; margin-top: 6px; }}
+.key {{ background-color: alpha({acc}, 0.16); color: {acc}; border: 1px solid alpha({acc}, .35);
+        border-radius: 8px; padding: 3px 9px; font-family: "JetBrains Mono"; font-size: 12px; font-weight: 700; }}
+.desc {{ color: {fg}; font-size: 13px; }}
+.foot {{ color: alpha({fg}, .45); font-size: 11px; letter-spacing: 1px; }}
+"""
+
+class App(Gtk.Application):
+    def __init__(self): super().__init__(application_id="os.kirana.keys")
+    def do_activate(self):
+        win = Gtk.ApplicationWindow(application=self, decorated=False, resizable=False, title="Kirana Keys")
+        prov = Gtk.CssProvider(); prov.load_from_data(CSS.encode())
+        Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), prov, 800)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14); card.add_css_class("card")
+        head = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        t = Gtk.Label(xalign=0); t.set_markup(f'Kirana <span foreground="{acc}" weight="300">OS</span>  ·  Shortcut')
+        t.add_css_class("title"); head.append(t)
+        s = Gtk.Label(label=f"TEMA {label.upper()}", xalign=0); s.add_css_class("sub"); head.append(s)
+        card.append(head)
+        cols = Gtk.Box(spacing=36)
+        for i in (0, 2):
+            col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+            for gname, items in GROUPS[i:i+2]:
+                g = Gtk.Label(label=gname.upper(), xalign=0); g.add_css_class("group"); col.append(g)
+                grid = Gtk.Grid(column_spacing=14, row_spacing=7)
+                for r, (k, d) in enumerate(items):
+                    kb = Gtk.Box(spacing=4)
+                    for part in k.split("  "):
+                        kl = Gtk.Label(label=part); kl.add_css_class("key"); kb.append(kl)
+                    dl = Gtk.Label(label=d, xalign=0); dl.add_css_class("desc")
+                    grid.attach(kb, 0, r, 1, 1); grid.attach(dl, 1, r, 1, 1)
+                col.append(grid)
+            cols.append(col)
+        card.append(cols)
+        f = Gtk.Label(label="Esc untuk menutup  ·  built by vianziro", xalign=0.5); f.add_css_class("foot")
+        card.append(f)
+        win.set_child(card)
+        kc = Gtk.EventControllerKey(); kc.connect("key-pressed", lambda *a: self.quit()); win.add_controller(kc)
+        cc = Gtk.GestureClick(); cc.connect("pressed", lambda *a: self.quit()); win.add_controller(cc)
+        win.connect("notify::is-active", lambda w, p: (not w.is_active()) and self.quit())
+        win.present()
+
+App().run(None)

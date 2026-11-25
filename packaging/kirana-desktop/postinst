@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+  command -v dconf >/dev/null && dconf update || true
+  if ! systemd-detect-virt --container -q 2>/dev/null; then
+    sysctl -q --system || true
+    systemctl try-restart systemd-journald.service || true
+    systemctl enable fstrim.timer >/dev/null 2>&1 || true
+  fi
+fi
+exit 0
